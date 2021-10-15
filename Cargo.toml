@@ -1,0 +1,14 @@
+[package]
+name = "bayestest"
+version = "0.1.0"
+description = "Bayesian A/B testing calculations for Rust"
+repository = "https://github.com/ankane/bayestest-rust"
+license = "MIT"
+authors = ["Andrew Kane <andrew@ankane.org>"]
+edition = "2018"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+statrs = "0.15"
