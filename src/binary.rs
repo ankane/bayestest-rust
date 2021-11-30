@@ -2,17 +2,17 @@ use statrs::function::beta::ln_beta as logbeta;
 
 struct BinaryVariant {
     participants: u32,
-    conversions: u32
+    conversions: u32,
 }
 
 pub struct BinaryTest {
-    variants: Vec<BinaryVariant>
+    variants: Vec<BinaryVariant>,
 }
 
 impl BinaryTest {
     pub fn new() -> Self {
         Self {
-            variants: Vec::with_capacity(4)
+            variants: Vec::with_capacity(4),
         }
     }
 
@@ -35,10 +35,10 @@ impl BinaryTest {
                     1 + a.conversions,
                     1 + a.participants - a.conversions,
                     1 + b.conversions,
-                    1 + b.participants - b.conversions
+                    1 + b.participants - b.conversions,
                 );
                 vec![prob, 1.0 - prob]
-            },
+            }
             3 => {
                 let mut probs = Vec::with_capacity(3);
                 let mut total = 0.0;
@@ -53,7 +53,7 @@ impl BinaryTest {
                         1 + b.conversions,
                         1 + b.participants - b.conversions,
                         1 + c.conversions,
-                        1 + c.participants - c.conversions
+                        1 + c.participants - c.conversions,
                     );
 
                     probs.push(prob);
@@ -61,7 +61,7 @@ impl BinaryTest {
                 }
                 probs.push(1.0 - total);
                 probs
-            },
+            }
             _ => {
                 let mut probs = Vec::with_capacity(4);
                 let mut total = 0.0;
@@ -79,7 +79,7 @@ impl BinaryTest {
                         1 + c.conversions,
                         1 + c.participants - c.conversions,
                         1 + d.conversions,
-                        1 + d.participants - d.conversions
+                        1 + d.participants - d.conversions,
                     );
 
                     probs.push(prob);
@@ -101,7 +101,7 @@ fn prob_b_beats_a(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32) -> f64 {
         total += (logbeta((alpha_a + i) as f64, beta_ba) - ((beta_b + i) as f64).ln() - logbeta((1 + i) as f64, beta_b as f64) - logbeta_aa_ba).exp();
     }
 
-    return total;
+    total
 }
 
 fn prob_c_beats_ab(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32, alpha_c: u32, beta_c: u32) -> f64 {
@@ -130,8 +130,9 @@ fn prob_c_beats_ab(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32, alpha_c
         }
     }
 
-    return 1.0 - prob_b_beats_a(alpha_c, beta_c, alpha_a, beta_a) -
-        prob_b_beats_a(alpha_c, beta_c, alpha_b, beta_b) + total;
+    1.0 - prob_b_beats_a(alpha_c, beta_c, alpha_a, beta_a)
+        - prob_b_beats_a(alpha_c, beta_c, alpha_b, beta_b)
+        + total
 }
 
 fn prob_d_beats_abc(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32, alpha_c: u32, beta_c: u32, alpha_d: u32, beta_d: u32) -> f64 {
@@ -168,20 +169,21 @@ fn prob_d_beats_abc(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32, alpha_
         }
     }
 
-    return 1.0 - prob_b_beats_a(alpha_a, beta_a, alpha_d, beta_d) -
-        prob_b_beats_a(alpha_b, beta_b, alpha_d, beta_d) -
-        prob_b_beats_a(alpha_c, beta_c, alpha_d, beta_d) +
-        prob_c_beats_ab(alpha_a, beta_a, alpha_b, beta_b, alpha_d, beta_d) +
-        prob_c_beats_ab(alpha_a, beta_a, alpha_c, beta_c, alpha_d, beta_d) +
-        prob_c_beats_ab(alpha_b, beta_b, alpha_c, beta_c, alpha_d, beta_d) - total;
+    1.0 - prob_b_beats_a(alpha_a, beta_a, alpha_d, beta_d)
+        - prob_b_beats_a(alpha_b, beta_b, alpha_d, beta_d)
+        - prob_b_beats_a(alpha_c, beta_c, alpha_d, beta_d)
+        + prob_c_beats_ab(alpha_a, beta_a, alpha_b, beta_b, alpha_d, beta_d)
+        + prob_c_beats_ab(alpha_a, beta_a, alpha_c, beta_c, alpha_d, beta_d)
+        + prob_c_beats_ab(alpha_b, beta_b, alpha_c, beta_c, alpha_d, beta_d)
+        - total
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::BinaryTest;
     use super::prob_b_beats_a;
     use super::prob_c_beats_ab;
     use super::prob_d_beats_abc;
+    use crate::BinaryTest;
 
     fn assert_approx(act: f64, exp: f64) {
         assert!((act - exp).abs() < 0.0000000001);

@@ -3,17 +3,17 @@ use statrs::function::gamma::ln_gamma as loggamma;
 
 struct CountVariant {
     events: u32,
-    exposure: u32
+    exposure: u32,
 }
 
 pub struct CountTest {
-    variants: Vec<CountVariant>
+    variants: Vec<CountVariant>,
 }
 
 impl CountTest {
     pub fn new() -> Self {
         Self {
-            variants: Vec::with_capacity(3)
+            variants: Vec::with_capacity(3),
         }
     }
 
@@ -38,7 +38,7 @@ impl CountTest {
                     b.exposure,
                 );
                 vec![prob, 1.0 - prob]
-            },
+            }
             _ => {
                 let mut probs = Vec::new();
                 let mut total = 0.0;
@@ -53,7 +53,7 @@ impl CountTest {
                         b.events,
                         b.exposure,
                         c.events,
-                        c.exposure
+                        c.exposure,
                     );
 
                     probs.push(prob);
@@ -80,7 +80,7 @@ fn prob_1_beats_2(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32) -> f64 {
             logbeta((k + 1) as f64, alpha_2 as f64)).exp();
     }
 
-    return total;
+    total
 }
 
 fn prob_1_beats_23(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32, alpha_3: u32, beta_3: u32) -> f64 {
@@ -102,15 +102,16 @@ fn prob_1_beats_23(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32, alpha_3
         }
     }
 
-    return 1.0 - prob_1_beats_2(alpha_2, beta_2, alpha_1, beta_1)
-              - prob_1_beats_2(alpha_3, beta_3, alpha_1, beta_1) + total;
+    1.0 - prob_1_beats_2(alpha_2, beta_2, alpha_1, beta_1)
+        - prob_1_beats_2(alpha_3, beta_3, alpha_1, beta_1)
+        + total
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::CountTest;
     use super::prob_1_beats_2;
     use super::prob_1_beats_23;
+    use crate::CountTest;
 
     fn assert_approx(act: f64, exp: f64) {
         assert!((act - exp).abs() < 0.0000000001);
