@@ -1,4 +1,5 @@
 extern "C" {
+    // use lgamma_r instead of lgamma for thread-safety
     pub fn lgamma_r(x: f64, signp: *mut i32) -> f64;
 }
 
