@@ -5,5 +5,5 @@ pub fn loggamma(x: f64) -> f64 {
 }
 
 pub fn logbeta(a: f64, b: f64) -> f64 {
-    return loggamma(a) + loggamma(b) - loggamma(a + b);
+    loggamma(a) + loggamma(b) - loggamma(a + b)
 }
