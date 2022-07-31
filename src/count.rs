@@ -1,5 +1,4 @@
-use statrs::function::beta::ln_beta as logbeta;
-use statrs::function::gamma::ln_gamma as loggamma;
+use crate::math::{logbeta, loggamma};
 
 struct CountVariant {
     events: u32,

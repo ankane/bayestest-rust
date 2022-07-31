@@ -1,4 +1,4 @@
-use statrs::function::beta::ln_beta as logbeta;
+use crate::math::logbeta;
 
 struct BinaryVariant {
     participants: u32,
