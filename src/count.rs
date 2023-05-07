@@ -65,6 +65,12 @@ impl CountTest {
     }
 }
 
+impl Default for CountTest {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 fn prob_1_beats_2(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32) -> f64 {
     let mut total = 0.0;
     let log_b1 = (beta_1 as f64).ln();

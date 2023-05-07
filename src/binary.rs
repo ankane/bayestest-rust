@@ -92,6 +92,12 @@ impl BinaryTest {
     }
 }
 
+impl Default for BinaryTest {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 fn prob_b_beats_a(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32) -> f64 {
     let mut total = 0.0;
     let logbeta_aa_ba = logbeta(alpha_a as f64, beta_a as f64);
@@ -135,6 +141,7 @@ fn prob_c_beats_ab(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32, alpha_c
         + total
 }
 
+#[allow(clippy::too_many_arguments)]
 fn prob_d_beats_abc(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32, alpha_c: u32, beta_c: u32, alpha_d: u32, beta_d: u32) -> f64 {
     let mut total = 0.0;
 
