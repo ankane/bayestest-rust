@@ -6,7 +6,7 @@ Based on [this post](https://www.evanmiller.org/bayesian-ab-testing.html) by Eva
 
 Also available in [C++](https://github.com/ankane/bayestest-cpp)
 
-[![Build Status](https://github.com/ankane/bayestest-rust/workflows/build/badge.svg?branch=master)](https://github.com/ankane/bayestest-rust/actions)
+[![Build Status](https://github.com/ankane/bayestest-rust/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/bayestest-rust/actions)
 
 ## Installation
 
