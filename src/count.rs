@@ -5,23 +5,27 @@ struct CountVariant {
     exposure: u32,
 }
 
+/// A count test.
 pub struct CountTest {
     variants: Vec<CountVariant>,
 }
 
 impl CountTest {
+    /// Creates a new count test.
     pub fn new() -> Self {
         Self {
             variants: Vec::with_capacity(3),
         }
     }
 
+    /// Adds a new variant.
     pub fn add(&mut self, events: u32, exposure: u32) {
         assert!(self.variants.len() < 3);
 
         self.variants.push(CountVariant { events, exposure });
     }
 
+    /// Returns the winning probability of each variant.
     pub fn probabilities(&self) -> Vec<f64> {
         match self.variants.len() {
             0 => vec![],

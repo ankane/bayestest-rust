@@ -5,17 +5,20 @@ struct BinaryVariant {
     conversions: u32,
 }
 
+/// A binary test.
 pub struct BinaryTest {
     variants: Vec<BinaryVariant>,
 }
 
 impl BinaryTest {
+    /// Creates a new binary test.
     pub fn new() -> Self {
         Self {
             variants: Vec::with_capacity(4),
         }
     }
 
+    /// Adds a new variant.
     pub fn add(&mut self, participants: u32, conversions: u32) {
         assert!(conversions <= participants);
         assert!(self.variants.len() < 4);
@@ -23,6 +26,7 @@ impl BinaryTest {
         self.variants.push(BinaryVariant { participants, conversions });
     }
 
+    /// Returns the winning probability of each variant.
     pub fn probabilities(&self) -> Vec<f64> {
         match self.variants.len() {
             0 => vec![],
