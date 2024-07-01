@@ -5,13 +5,13 @@ struct CountVariant {
     exposure: u32,
 }
 
-/// A count test.
+/// A test for count data.
 pub struct CountTest {
     variants: Vec<CountVariant>,
 }
 
 impl CountTest {
-    /// Creates a new count test.
+    /// Creates a new test for count data.
     pub fn new() -> Self {
         Self {
             variants: Vec::with_capacity(3),

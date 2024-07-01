@@ -5,13 +5,13 @@ struct BinaryVariant {
     conversions: u32,
 }
 
-/// A binary test.
+/// A test for binary outcomes.
 pub struct BinaryTest {
     variants: Vec<BinaryVariant>,
 }
 
 impl BinaryTest {
-    /// Creates a new binary test.
+    /// Creates a new test for binary outcomes.
     pub fn new() -> Self {
         Self {
             variants: Vec::with_capacity(4),
