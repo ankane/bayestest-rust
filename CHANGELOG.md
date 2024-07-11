@@ -1,3 +1,7 @@
+## 0.1.2 (unreleased)
+
+- Improved docs
+
 ## 0.1.1 (2022-07-31)
 
 - Reduced dependencies
