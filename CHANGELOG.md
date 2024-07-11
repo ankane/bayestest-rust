@@ -1,6 +1,6 @@
-## 0.1.2 (unreleased)
+## 0.2.0 (unreleased)
 
-- Improved docs
+- Updated Rust edition to 2021
 
 ## 0.1.1 (2022-07-31)
 

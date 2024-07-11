@@ -5,7 +5,7 @@ description = "Bayesian A/B testing calculations for Rust"
 repository = "https://github.com/ankane/bayestest-rust"
 license = "MIT"
 authors = ["Andrew Kane <andrew@ankane.org>"]
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 
 [lib]
