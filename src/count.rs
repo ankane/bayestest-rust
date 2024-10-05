@@ -34,12 +34,7 @@ impl CountTest {
                 let a = &self.variants[0];
                 let b = &self.variants[1];
 
-                let prob = prob_1_beats_2(
-                    a.events,
-                    a.exposure,
-                    b.events,
-                    b.exposure,
-                );
+                let prob = prob_1_beats_2(a.events, a.exposure, b.events, b.exposure);
                 vec![prob, 1.0 - prob]
             }
             _ => {
@@ -51,12 +46,7 @@ impl CountTest {
                     let c = &self.variants[(i + 2) % 3];
 
                     let prob = prob_1_beats_23(
-                        a.events,
-                        a.exposure,
-                        b.events,
-                        b.exposure,
-                        c.events,
-                        c.exposure,
+                        a.events, a.exposure, b.events, b.exposure, c.events, c.exposure,
                     );
 
                     probs.push(prob);
@@ -82,17 +72,24 @@ fn prob_1_beats_2(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32) -> f64 {
     let log_b1_b2 = ((beta_1 + beta_2) as f64).ln();
 
     for k in 0..alpha_1 {
-        total += (k as f64 * log_b1 +
-            a2_log_b2 -
-            (k + alpha_2) as f64 * log_b1_b2 -
-            ((k + alpha_2) as f64).ln() -
-            logbeta((k + 1) as f64, alpha_2 as f64)).exp();
+        total += (k as f64 * log_b1 + a2_log_b2
+            - (k + alpha_2) as f64 * log_b1_b2
+            - ((k + alpha_2) as f64).ln()
+            - logbeta((k + 1) as f64, alpha_2 as f64))
+        .exp();
     }
 
     total
 }
 
-fn prob_1_beats_23(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32, alpha_3: u32, beta_3: u32) -> f64 {
+fn prob_1_beats_23(
+    alpha_1: u32,
+    beta_1: u32,
+    alpha_2: u32,
+    beta_2: u32,
+    alpha_3: u32,
+    beta_3: u32,
+) -> f64 {
     let mut total = 0.0;
 
     let log_b1_b2_b3 = ((beta_1 + beta_2 + beta_3) as f64).ln();
@@ -105,9 +102,11 @@ fn prob_1_beats_23(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32, alpha_3
         let sum_k = a1_log_b1 + k as f64 * log_b2 - loggamma((k + 1) as f64);
 
         for l in 0..alpha_3 {
-            total += (sum_k + l as f64 * log_b3
-                - (k + l + alpha_1) as f64 * log_b1_b2_b3
-                + loggamma((k + l + alpha_1) as f64) - loggamma((l + 1) as f64) - loggamma_a1).exp();
+            total += (sum_k + l as f64 * log_b3 - (k + l + alpha_1) as f64 * log_b1_b2_b3
+                + loggamma((k + l + alpha_1) as f64)
+                - loggamma((l + 1) as f64)
+                - loggamma_a1)
+                .exp();
         }
     }
 
