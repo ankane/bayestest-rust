@@ -1,4 +1,4 @@
-## BayesTest Rust
+# BayesTest Rust
 
 Bayesian A/B testing calculations for Rust
 
