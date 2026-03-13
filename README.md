@@ -4,7 +4,7 @@ Bayesian A/B testing calculations for Rust
 
 Based on [this post](https://www.evanmiller.org/bayesian-ab-testing.html) by Evan Miller
 
-Also available in [C++](https://github.com/ankane/bayestest-cpp)
+Also available in [C](https://github.com/ankane/bayestest-c) and [C++](https://github.com/ankane/bayestest-cpp)
 
 [![Build Status](https://github.com/ankane/bayestest-rust/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/bayestest-rust/actions)
 
