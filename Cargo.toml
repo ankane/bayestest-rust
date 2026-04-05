@@ -13,3 +13,6 @@ readme = "README.md"
 doctest = false
 
 [dependencies]
+
+[features]
+nightly = []
