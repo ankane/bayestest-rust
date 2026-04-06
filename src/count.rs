@@ -1,4 +1,5 @@
 use crate::math::{logbeta, loggamma};
+use crate::Error;
 
 struct CountVariant {
     events: u32,
@@ -19,10 +20,13 @@ impl CountTest {
     }
 
     /// Adds a new variant.
-    pub fn add(&mut self, events: u32, exposure: u32) {
-        assert!(self.variants.len() < 3);
+    pub fn add(&mut self, events: u32, exposure: u32) -> Result<(), Error> {
+        if self.variants.len() == 3 {
+            return Err(Error::TooManyVariants);
+        }
 
         self.variants.push(CountVariant { events, exposure });
+        Ok(())
     }
 
     /// Returns the winning probability of each variant.
@@ -119,7 +123,7 @@ fn prob_1_beats_23(
 mod tests {
     use super::prob_1_beats_2;
     use super::prob_1_beats_23;
-    use crate::CountTest;
+    use crate::{CountTest, Error};
 
     fn assert_approx(act: f64, exp: f64) {
         assert!((act - exp).abs() < 0.0000000001);
@@ -134,7 +138,7 @@ mod tests {
     #[test]
     fn test_one_variant() {
         let mut test = CountTest::new();
-        test.add(2, 1);
+        test.add(2, 1).unwrap();
         let probabilities = test.probabilities();
         assert_eq!(probabilities.len(), 1);
         assert_eq!(probabilities, vec![1.0]);
@@ -143,8 +147,8 @@ mod tests {
     #[test]
     fn test_two_variants() {
         let mut test = CountTest::new();
-        test.add(55, 50);
-        test.add(30, 30);
+        test.add(55, 50).unwrap();
+        test.add(30, 30).unwrap();
         let probabilities = test.probabilities();
         assert_eq!(probabilities.len(), 2);
         assert_approx(probabilities[0], 0.6710529663661625);
@@ -154,9 +158,9 @@ mod tests {
     #[test]
     fn test_three_variants() {
         let mut test = CountTest::new();
-        test.add(55, 50);
-        test.add(30, 30);
-        test.add(10, 10);
+        test.add(55, 50).unwrap();
+        test.add(30, 30).unwrap();
+        test.add(10, 10).unwrap();
         let probabilities = test.probabilities();
         assert_eq!(probabilities.len(), 3);
         assert_approx(probabilities[0], 0.4633365654508068);
@@ -165,12 +169,14 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: self.variants.len() < 3")]
     fn test_four_variants() {
         let mut test = CountTest::new();
-        for _ in 0..4 {
-            test.add(2, 1);
+        for _ in 0..3 {
+            test.add(2, 1).unwrap();
         }
+        let err = test.add(2, 1).unwrap_err();
+        assert_eq!(err, Error::TooManyVariants);
+        assert_eq!(err.to_string(), "too many variants".to_string());
     }
 
     #[test]

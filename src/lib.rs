@@ -3,7 +3,9 @@
 
 mod binary;
 mod count;
+mod error;
 mod math;
 
-pub use binary::*;
-pub use count::*;
+pub use binary::BinaryTest;
+pub use count::CountTest;
+pub use error::Error;

@@ -1,5 +1,6 @@
-## 0.2.1 (unreleased)
+## 0.3.0 (unreleased)
 
+- Added `Error` enum
 - Added experimental `nightly` feature
 
 ## 0.2.0 (2024-07-10)

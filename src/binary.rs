@@ -1,4 +1,5 @@
 use crate::math::logbeta;
+use crate::Error;
 
 struct BinaryVariant {
     participants: u32,
@@ -19,14 +20,20 @@ impl BinaryTest {
     }
 
     /// Adds a new variant.
-    pub fn add(&mut self, participants: u32, conversions: u32) {
-        assert!(conversions <= participants);
-        assert!(self.variants.len() < 4);
+    pub fn add(&mut self, participants: u32, conversions: u32) -> Result<(), Error> {
+        if self.variants.len() == 4 {
+            return Err(Error::TooManyVariants);
+        }
+
+        if conversions > participants {
+            return Err(Error::ConversionsParticipants);
+        }
 
         self.variants.push(BinaryVariant {
             participants,
             conversions,
         });
+        Ok(())
     }
 
     /// Returns the winning probability of each variant.
@@ -225,7 +232,7 @@ mod tests {
     use super::prob_b_beats_a;
     use super::prob_c_beats_ab;
     use super::prob_d_beats_abc;
-    use crate::BinaryTest;
+    use crate::{BinaryTest, Error};
 
     fn assert_approx(act: f64, exp: f64) {
         assert!((act - exp).abs() < 0.0000000001);
@@ -240,15 +247,15 @@ mod tests {
     #[test]
     fn test_one_variant() {
         let mut test = BinaryTest::new();
-        test.add(2, 1);
+        test.add(2, 1).unwrap();
         assert_eq!(test.probabilities(), vec![1.0]);
     }
 
     #[test]
     fn test_two_variants() {
         let mut test = BinaryTest::new();
-        test.add(200, 100);
-        test.add(400, 250);
+        test.add(200, 100).unwrap();
+        test.add(400, 250).unwrap();
         let probabilities = test.probabilities();
         assert_eq!(probabilities.len(), 2);
         assert_approx(probabilities[0], 0.001756431311879969);
@@ -258,9 +265,9 @@ mod tests {
     #[test]
     fn test_three_variants() {
         let mut test = BinaryTest::new();
-        test.add(61, 15);
-        test.add(54, 13);
-        test.add(72, 19);
+        test.add(61, 15).unwrap();
+        test.add(54, 13).unwrap();
+        test.add(72, 19).unwrap();
         let probabilities = test.probabilities();
         assert_eq!(probabilities.len(), 3);
         assert_approx(probabilities[0], 0.29632930651329037);
@@ -271,10 +278,10 @@ mod tests {
     #[test]
     fn test_four_variants() {
         let mut test = BinaryTest::new();
-        test.add(55, 50);
-        test.add(30, 30);
-        test.add(10, 10);
-        test.add(50, 45);
+        test.add(55, 50).unwrap();
+        test.add(30, 30).unwrap();
+        test.add(10, 10).unwrap();
+        test.add(50, 45).unwrap();
         let probabilities = test.probabilities();
         assert_eq!(probabilities.len(), 4);
         assert_approx(probabilities[0], 0.02692341639320739);
@@ -284,19 +291,25 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: self.variants.len() < 4")]
     fn test_five_variants() {
         let mut test = BinaryTest::new();
-        for _ in 0..5 {
-            test.add(2, 1);
+        for _ in 0..4 {
+            test.add(2, 1).unwrap();
         }
+        let err = test.add(2, 1).unwrap_err();
+        assert_eq!(err, Error::TooManyVariants);
+        assert_eq!(err.to_string(), "too many variants".to_string());
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: conversions <= participants")]
     fn test_too_many_conversions() {
         let mut test = BinaryTest::new();
-        test.add(1, 2);
+        let err = test.add(1, 2).unwrap_err();
+        assert_eq!(err, Error::ConversionsParticipants);
+        assert_eq!(
+            err.to_string(),
+            "conversions cannot be greater than participants".to_string()
+        );
     }
 
     #[test]
