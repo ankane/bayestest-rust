@@ -1,3 +1,19 @@
+#[cfg(not(feature = "no_std"))]
+pub fn exp(x: f64) -> f64 {
+    x.exp()
+}
+
+#[cfg(feature = "no_std")]
+pub use libm::exp;
+
+#[cfg(not(feature = "no_std"))]
+pub fn ln(x: f64) -> f64 {
+    x.ln()
+}
+
+#[cfg(feature = "no_std")]
+pub use libm::log as ln;
+
 #[cfg(feature = "nightly")]
 pub fn loggamma(x: f64) -> f64 {
     x.ln_gamma().0

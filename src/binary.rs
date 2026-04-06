@@ -1,5 +1,6 @@
-use crate::math::logbeta;
+use crate::math::{exp, ln, logbeta};
 use crate::Error;
+use alloc::{vec, vec::Vec};
 
 struct BinaryVariant {
     participants: u32,
@@ -121,11 +122,10 @@ impl BinaryTest {
         let beta_ba = (beta_b + beta_a) as f64;
 
         for i in 0..alpha_b {
-            total += (logbeta((alpha_a + i) as f64, beta_ba)
-                - ((beta_b + i) as f64).ln()
+            total += exp(logbeta((alpha_a + i) as f64, beta_ba)
+                - ln((beta_b + i) as f64)
                 - logbeta((1 + i) as f64, beta_b as f64)
-                - logbeta_aa_ba)
-                .exp();
+                - logbeta_aa_ba);
         }
 
         total
@@ -147,7 +147,7 @@ impl BinaryTest {
 
         for j in 0..alpha_b {
             log_bb_j_logbeta_j_bb
-                .push(((beta_b + j) as f64).ln() + logbeta((1 + j) as f64, beta_b as f64));
+                .push(ln((beta_b + j) as f64) + logbeta((1 + j) as f64, beta_b as f64));
         }
 
         let abc = (beta_a + beta_b + beta_c) as f64;
@@ -158,14 +158,13 @@ impl BinaryTest {
         }
 
         for i in 0..alpha_a {
-            let sum_i = -((beta_a + i) as f64).ln()
-                - logbeta((1 + i) as f64, beta_a as f64)
-                - logbeta_ac_bc;
+            let sum_i =
+                -ln((beta_a + i) as f64) - logbeta((1 + i) as f64, beta_a as f64) - logbeta_ac_bc;
 
             for j in 0..alpha_b {
-                total += (sum_i + logbeta_ac_i_j[(i + j) as usize]
-                    - log_bb_j_logbeta_j_bb[j as usize])
-                    .exp();
+                total +=
+                    exp(sum_i + logbeta_ac_i_j[(i + j) as usize]
+                        - log_bb_j_logbeta_j_bb[j as usize]);
             }
         }
 
@@ -192,13 +191,13 @@ impl BinaryTest {
         let mut log_bb_j_logbeta_j_bb = Vec::with_capacity(alpha_b as usize);
         for j in 0..alpha_b {
             log_bb_j_logbeta_j_bb
-                .push(((beta_b + j) as f64).ln() + logbeta((1 + j) as f64, beta_b as f64));
+                .push(ln((beta_b + j) as f64) + logbeta((1 + j) as f64, beta_b as f64));
         }
 
         let mut log_bc_k_logbeta_k_bc = Vec::with_capacity(alpha_c as usize);
         for k in 0..alpha_c {
             log_bc_k_logbeta_k_bc
-                .push(((beta_c + k) as f64).ln() + logbeta((1 + k) as f64, beta_c as f64));
+                .push(ln((beta_c + k) as f64) + logbeta((1 + k) as f64, beta_c as f64));
         }
 
         let abcd = (beta_a + beta_b + beta_c + beta_d) as f64;
@@ -209,17 +208,15 @@ impl BinaryTest {
         }
 
         for i in 0..alpha_a {
-            let sum_i = -((beta_a + i) as f64).ln()
-                - logbeta((1 + i) as f64, beta_a as f64)
-                - logbeta_ad_bd;
+            let sum_i =
+                -ln((beta_a + i) as f64) - logbeta((1 + i) as f64, beta_a as f64) - logbeta_ad_bd;
 
             for j in 0..alpha_b {
                 let sum_j = sum_i - log_bb_j_logbeta_j_bb[j as usize];
 
                 for k in 0..alpha_c {
-                    total += (sum_j + logbeta_bd_i_j_k[(i + j + k) as usize]
-                        - log_bc_k_logbeta_k_bc[k as usize])
-                        .exp();
+                    total += exp(sum_j + logbeta_bd_i_j_k[(i + j + k) as usize]
+                        - log_bc_k_logbeta_k_bc[k as usize]);
                 }
             }
         }
@@ -243,6 +240,7 @@ impl Default for BinaryTest {
 #[cfg(test)]
 mod tests {
     use crate::{BinaryTest, Error};
+    use alloc::vec;
 
     fn assert_approx(act: f64, exp: f64) {
         assert!((act - exp).abs() < 0.0000000001);

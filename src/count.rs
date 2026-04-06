@@ -1,5 +1,6 @@
-use crate::math::{logbeta, loggamma};
+use crate::math::{exp, ln, logbeta, loggamma};
 use crate::Error;
+use alloc::{vec, vec::Vec};
 
 struct CountVariant {
     events: u32,
@@ -72,16 +73,15 @@ impl CountTest {
 
     fn prob_1_beats_2(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32) -> f64 {
         let mut total = 0.0;
-        let log_b1 = (beta_1 as f64).ln();
-        let a2_log_b2 = alpha_2 as f64 * (beta_2 as f64).ln();
-        let log_b1_b2 = ((beta_1 + beta_2) as f64).ln();
+        let log_b1 = ln(beta_1 as f64);
+        let a2_log_b2 = alpha_2 as f64 * ln(beta_2 as f64);
+        let log_b1_b2 = ln((beta_1 + beta_2) as f64);
 
         for k in 0..alpha_1 {
-            total += (k as f64 * log_b1 + a2_log_b2
+            total += exp(k as f64 * log_b1 + a2_log_b2
                 - (k + alpha_2) as f64 * log_b1_b2
-                - ((k + alpha_2) as f64).ln()
-                - logbeta((k + 1) as f64, alpha_2 as f64))
-            .exp();
+                - ln((k + alpha_2) as f64)
+                - logbeta((k + 1) as f64, alpha_2 as f64));
         }
 
         total
@@ -97,21 +97,22 @@ impl CountTest {
     ) -> f64 {
         let mut total = 0.0;
 
-        let log_b1_b2_b3 = ((beta_1 + beta_2 + beta_3) as f64).ln();
-        let a1_log_b1 = alpha_1 as f64 * (beta_1 as f64).ln();
-        let log_b2 = (beta_2 as f64).ln();
-        let log_b3 = (beta_3 as f64).ln();
+        let log_b1_b2_b3 = ln((beta_1 + beta_2 + beta_3) as f64);
+        let a1_log_b1 = alpha_1 as f64 * ln(beta_1 as f64);
+        let log_b2 = ln(beta_2 as f64);
+        let log_b3 = ln(beta_3 as f64);
         let loggamma_a1 = loggamma(alpha_1 as f64);
 
         for k in 0..alpha_2 {
             let sum_k = a1_log_b1 + k as f64 * log_b2 - loggamma((k + 1) as f64);
 
             for l in 0..alpha_3 {
-                total += (sum_k + l as f64 * log_b3 - (k + l + alpha_1) as f64 * log_b1_b2_b3
-                    + loggamma((k + l + alpha_1) as f64)
-                    - loggamma((l + 1) as f64)
-                    - loggamma_a1)
-                    .exp();
+                total += exp(
+                    sum_k + l as f64 * log_b3 - (k + l + alpha_1) as f64 * log_b1_b2_b3
+                        + loggamma((k + l + alpha_1) as f64)
+                        - loggamma((l + 1) as f64)
+                        - loggamma_a1,
+                );
             }
         }
 
@@ -130,6 +131,7 @@ impl Default for CountTest {
 #[cfg(test)]
 mod tests {
     use crate::{CountTest, Error};
+    use alloc::vec;
 
     fn assert_approx(act: f64, exp: f64) {
         assert!((act - exp).abs() < 0.0000000001);

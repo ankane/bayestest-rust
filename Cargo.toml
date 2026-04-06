@@ -13,6 +13,8 @@ readme = "README.md"
 doctest = false
 
 [dependencies]
+libm = { version = "0.2", optional = true }
 
 [features]
 nightly = []
+no_std = ["libm"]
