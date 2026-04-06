@@ -3,6 +3,7 @@
 - Added `Error` enum
 - Added experimental support for `no_std`
 - Added experimental `nightly` feature
+- Changed `add` method to return `Result`
 
 ## 0.2.0 (2024-07-10)
 
