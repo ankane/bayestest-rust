@@ -22,11 +22,13 @@ impl BinaryTest {
     /// Adds a new variant.
     pub fn add(&mut self, participants: u32, conversions: u32) -> Result<(), Error> {
         if self.variants.len() == 4 {
-            return Err(Error::TooManyVariants);
+            return Err(Error::Parameter("too many variants"));
         }
 
         if conversions > participants {
-            return Err(Error::ConversionsParticipants);
+            return Err(Error::Parameter(
+                "conversions cannot be greater than participants",
+            ));
         }
 
         self.variants.push(BinaryVariant {
@@ -296,19 +298,18 @@ mod tests {
         for _ in 0..4 {
             test.add(2, 1).unwrap();
         }
-        let err = test.add(2, 1).unwrap_err();
-        assert_eq!(err, Error::TooManyVariants);
-        assert_eq!(err.to_string(), "too many variants".to_string());
+        assert_eq!(
+            test.add(2, 1).unwrap_err(),
+            Error::Parameter("too many variants")
+        );
     }
 
     #[test]
     fn test_too_many_conversions() {
         let mut test = BinaryTest::new();
-        let err = test.add(1, 2).unwrap_err();
-        assert_eq!(err, Error::ConversionsParticipants);
         assert_eq!(
-            err.to_string(),
-            "conversions cannot be greater than participants".to_string()
+            test.add(1, 2).unwrap_err(),
+            Error::Parameter("conversions cannot be greater than participants")
         );
     }
 

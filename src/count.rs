@@ -22,7 +22,7 @@ impl CountTest {
     /// Adds a new variant.
     pub fn add(&mut self, events: u32, exposure: u32) -> Result<(), Error> {
         if self.variants.len() == 3 {
-            return Err(Error::TooManyVariants);
+            return Err(Error::Parameter("too many variants"));
         }
 
         self.variants.push(CountVariant { events, exposure });
@@ -172,9 +172,10 @@ mod tests {
         for _ in 0..3 {
             test.add(2, 1).unwrap();
         }
-        let err = test.add(2, 1).unwrap_err();
-        assert_eq!(err, Error::TooManyVariants);
-        assert_eq!(err.to_string(), "too many variants".to_string());
+        assert_eq!(
+            test.add(2, 1).unwrap_err(),
+            Error::Parameter("too many variants")
+        );
     }
 
     #[test]
