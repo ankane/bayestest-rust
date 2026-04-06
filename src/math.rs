@@ -1,5 +1,5 @@
 #[cfg(feature = "no_std")]
-pub use libm::{exp, log as ln, lgamma as loggamma};
+pub use libm::{exp, lgamma as loggamma, log as ln};
 
 #[cfg(not(feature = "no_std"))]
 pub fn exp(x: f64) -> f64 {
