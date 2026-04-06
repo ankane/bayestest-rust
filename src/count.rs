@@ -25,6 +25,14 @@ impl CountTest {
             return Err(Error::Parameter("too many variants"));
         }
 
+        if events > u32::MAX / 4 {
+            return Err(Error::Parameter("too many events"));
+        }
+
+        if exposure > u32::MAX / 4 {
+            return Err(Error::Parameter("too high exposure"));
+        }
+
         self.variants.push(CountVariant { events, exposure });
         Ok(())
     }

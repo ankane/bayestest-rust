@@ -25,6 +25,14 @@ impl BinaryTest {
             return Err(Error::Parameter("too many variants"));
         }
 
+        if participants > u32::MAX / 4 {
+            return Err(Error::Parameter("too many participants"));
+        }
+
+        if conversions > u32::MAX / 4 {
+            return Err(Error::Parameter("too many conversions"));
+        }
+
         if conversions > participants {
             return Err(Error::Parameter(
                 "conversions cannot be greater than participants",
