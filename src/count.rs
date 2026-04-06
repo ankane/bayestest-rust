@@ -38,7 +38,7 @@ impl CountTest {
                 let a = &self.variants[0];
                 let b = &self.variants[1];
 
-                let prob = prob_1_beats_2(a.events, a.exposure, b.events, b.exposure);
+                let prob = Self::prob_1_beats_2(a.events, a.exposure, b.events, b.exposure);
                 vec![prob, 1.0 - prob]
             }
             _ => {
@@ -49,7 +49,7 @@ impl CountTest {
                     let b = &self.variants[(i + 1) % 3];
                     let c = &self.variants[(i + 2) % 3];
 
-                    let prob = prob_1_beats_23(
+                    let prob = Self::prob_1_beats_23(
                         a.events, a.exposure, b.events, b.exposure, c.events, c.exposure,
                     );
 
@@ -61,6 +61,56 @@ impl CountTest {
             }
         }
     }
+
+    fn prob_1_beats_2(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32) -> f64 {
+        let mut total = 0.0;
+        let log_b1 = (beta_1 as f64).ln();
+        let a2_log_b2 = alpha_2 as f64 * (beta_2 as f64).ln();
+        let log_b1_b2 = ((beta_1 + beta_2) as f64).ln();
+
+        for k in 0..alpha_1 {
+            total += (k as f64 * log_b1 + a2_log_b2
+                - (k + alpha_2) as f64 * log_b1_b2
+                - ((k + alpha_2) as f64).ln()
+                - logbeta((k + 1) as f64, alpha_2 as f64))
+            .exp();
+        }
+
+        total
+    }
+
+    fn prob_1_beats_23(
+        alpha_1: u32,
+        beta_1: u32,
+        alpha_2: u32,
+        beta_2: u32,
+        alpha_3: u32,
+        beta_3: u32,
+    ) -> f64 {
+        let mut total = 0.0;
+
+        let log_b1_b2_b3 = ((beta_1 + beta_2 + beta_3) as f64).ln();
+        let a1_log_b1 = alpha_1 as f64 * (beta_1 as f64).ln();
+        let log_b2 = (beta_2 as f64).ln();
+        let log_b3 = (beta_3 as f64).ln();
+        let loggamma_a1 = loggamma(alpha_1 as f64);
+
+        for k in 0..alpha_2 {
+            let sum_k = a1_log_b1 + k as f64 * log_b2 - loggamma((k + 1) as f64);
+
+            for l in 0..alpha_3 {
+                total += (sum_k + l as f64 * log_b3 - (k + l + alpha_1) as f64 * log_b1_b2_b3
+                    + loggamma((k + l + alpha_1) as f64)
+                    - loggamma((l + 1) as f64)
+                    - loggamma_a1)
+                    .exp();
+            }
+        }
+
+        1.0 - Self::prob_1_beats_2(alpha_2, beta_2, alpha_1, beta_1)
+            - Self::prob_1_beats_2(alpha_3, beta_3, alpha_1, beta_1)
+            + total
+    }
 }
 
 impl Default for CountTest {
@@ -69,60 +119,8 @@ impl Default for CountTest {
     }
 }
 
-fn prob_1_beats_2(alpha_1: u32, beta_1: u32, alpha_2: u32, beta_2: u32) -> f64 {
-    let mut total = 0.0;
-    let log_b1 = (beta_1 as f64).ln();
-    let a2_log_b2 = alpha_2 as f64 * (beta_2 as f64).ln();
-    let log_b1_b2 = ((beta_1 + beta_2) as f64).ln();
-
-    for k in 0..alpha_1 {
-        total += (k as f64 * log_b1 + a2_log_b2
-            - (k + alpha_2) as f64 * log_b1_b2
-            - ((k + alpha_2) as f64).ln()
-            - logbeta((k + 1) as f64, alpha_2 as f64))
-        .exp();
-    }
-
-    total
-}
-
-fn prob_1_beats_23(
-    alpha_1: u32,
-    beta_1: u32,
-    alpha_2: u32,
-    beta_2: u32,
-    alpha_3: u32,
-    beta_3: u32,
-) -> f64 {
-    let mut total = 0.0;
-
-    let log_b1_b2_b3 = ((beta_1 + beta_2 + beta_3) as f64).ln();
-    let a1_log_b1 = alpha_1 as f64 * (beta_1 as f64).ln();
-    let log_b2 = (beta_2 as f64).ln();
-    let log_b3 = (beta_3 as f64).ln();
-    let loggamma_a1 = loggamma(alpha_1 as f64);
-
-    for k in 0..alpha_2 {
-        let sum_k = a1_log_b1 + k as f64 * log_b2 - loggamma((k + 1) as f64);
-
-        for l in 0..alpha_3 {
-            total += (sum_k + l as f64 * log_b3 - (k + l + alpha_1) as f64 * log_b1_b2_b3
-                + loggamma((k + l + alpha_1) as f64)
-                - loggamma((l + 1) as f64)
-                - loggamma_a1)
-                .exp();
-        }
-    }
-
-    1.0 - prob_1_beats_2(alpha_2, beta_2, alpha_1, beta_1)
-        - prob_1_beats_2(alpha_3, beta_3, alpha_1, beta_1)
-        + total
-}
-
 #[cfg(test)]
 mod tests {
-    use super::prob_1_beats_2;
-    use super::prob_1_beats_23;
     use crate::{CountTest, Error};
 
     fn assert_approx(act: f64, exp: f64) {
@@ -181,16 +179,34 @@ mod tests {
 
     #[test]
     fn test_prob_1_beats_2() {
-        assert_approx(prob_1_beats_2(1, 2, 3, 4), 0.29629629629629595);
-        assert_approx(prob_1_beats_2(55, 50, 30, 30), 0.6710529663661625);
-        assert_approx(prob_1_beats_2(50, 50, 35, 30), 0.24796547380927997);
+        assert_approx(CountTest::prob_1_beats_2(1, 2, 3, 4), 0.29629629629629595);
+        assert_approx(
+            CountTest::prob_1_beats_2(55, 50, 30, 30),
+            0.6710529663661625,
+        );
+        assert_approx(
+            CountTest::prob_1_beats_2(50, 50, 35, 30),
+            0.24796547380927997,
+        );
     }
 
     #[test]
     fn test_prob_1_beats_23() {
-        assert_approx(prob_1_beats_23(1, 2, 3, 4, 5, 6), 0.16901765046296247);
-        assert_approx(prob_1_beats_23(1, 2, 3, 4, 5, 100), 0.2962330601144884);
-        assert_approx(prob_1_beats_23(55, 50, 30, 30, 10, 10), 0.4633365654508068);
-        assert_approx(prob_1_beats_23(50, 50, 35, 30, 13, 18), 0.23397153850438435);
+        assert_approx(
+            CountTest::prob_1_beats_23(1, 2, 3, 4, 5, 6),
+            0.16901765046296247,
+        );
+        assert_approx(
+            CountTest::prob_1_beats_23(1, 2, 3, 4, 5, 100),
+            0.2962330601144884,
+        );
+        assert_approx(
+            CountTest::prob_1_beats_23(55, 50, 30, 30, 10, 10),
+            0.4633365654508068,
+        );
+        assert_approx(
+            CountTest::prob_1_beats_23(50, 50, 35, 30, 13, 18),
+            0.23397153850438435,
+        );
     }
 }

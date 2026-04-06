@@ -45,7 +45,7 @@ impl BinaryTest {
                 let b = &self.variants[0];
                 let a = &self.variants[1];
 
-                let prob = prob_b_beats_a(
+                let prob = Self::prob_b_beats_a(
                     1 + a.conversions,
                     1 + a.participants - a.conversions,
                     1 + b.conversions,
@@ -61,7 +61,7 @@ impl BinaryTest {
                     let b = &self.variants[(i + 1) % 3];
                     let a = &self.variants[(i + 2) % 3];
 
-                    let prob = prob_c_beats_ab(
+                    let prob = Self::prob_c_beats_ab(
                         1 + a.conversions,
                         1 + a.participants - a.conversions,
                         1 + b.conversions,
@@ -85,7 +85,7 @@ impl BinaryTest {
                     let b = &self.variants[(i + 2) % 4];
                     let a = &self.variants[(i + 3) % 4];
 
-                    let prob = prob_d_beats_abc(
+                    let prob = Self::prob_d_beats_abc(
                         1 + a.conversions,
                         1 + a.participants - a.conversions,
                         1 + b.conversions,
@@ -104,6 +104,124 @@ impl BinaryTest {
             }
         }
     }
+
+    fn prob_b_beats_a(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32) -> f64 {
+        let mut total = 0.0;
+        let logbeta_aa_ba = logbeta(alpha_a as f64, beta_a as f64);
+        let beta_ba = (beta_b + beta_a) as f64;
+
+        for i in 0..alpha_b {
+            total += (logbeta((alpha_a + i) as f64, beta_ba)
+                - ((beta_b + i) as f64).ln()
+                - logbeta((1 + i) as f64, beta_b as f64)
+                - logbeta_aa_ba)
+                .exp();
+        }
+
+        total
+    }
+
+    fn prob_c_beats_ab(
+        alpha_a: u32,
+        beta_a: u32,
+        alpha_b: u32,
+        beta_b: u32,
+        alpha_c: u32,
+        beta_c: u32,
+    ) -> f64 {
+        let mut total = 0.0;
+
+        let logbeta_ac_bc = logbeta(alpha_c as f64, beta_c as f64);
+
+        let mut log_bb_j_logbeta_j_bb = Vec::with_capacity(alpha_b as usize);
+
+        for j in 0..alpha_b {
+            log_bb_j_logbeta_j_bb
+                .push(((beta_b + j) as f64).ln() + logbeta((1 + j) as f64, beta_b as f64));
+        }
+
+        let abc = (beta_a + beta_b + beta_c) as f64;
+        let mut logbeta_ac_i_j = Vec::with_capacity((alpha_a + alpha_b) as usize);
+
+        for i in 0..alpha_a + alpha_b {
+            logbeta_ac_i_j.push(logbeta((alpha_c + i) as f64, abc));
+        }
+
+        for i in 0..alpha_a {
+            let sum_i = -((beta_a + i) as f64).ln()
+                - logbeta((1 + i) as f64, beta_a as f64)
+                - logbeta_ac_bc;
+
+            for j in 0..alpha_b {
+                total += (sum_i + logbeta_ac_i_j[(i + j) as usize]
+                    - log_bb_j_logbeta_j_bb[j as usize])
+                    .exp();
+            }
+        }
+
+        1.0 - Self::prob_b_beats_a(alpha_c, beta_c, alpha_a, beta_a)
+            - Self::prob_b_beats_a(alpha_c, beta_c, alpha_b, beta_b)
+            + total
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn prob_d_beats_abc(
+        alpha_a: u32,
+        beta_a: u32,
+        alpha_b: u32,
+        beta_b: u32,
+        alpha_c: u32,
+        beta_c: u32,
+        alpha_d: u32,
+        beta_d: u32,
+    ) -> f64 {
+        let mut total = 0.0;
+
+        let logbeta_ad_bd = logbeta(alpha_d as f64, beta_d as f64);
+
+        let mut log_bb_j_logbeta_j_bb = Vec::with_capacity(alpha_b as usize);
+        for j in 0..alpha_b {
+            log_bb_j_logbeta_j_bb
+                .push(((beta_b + j) as f64).ln() + logbeta((1 + j) as f64, beta_b as f64));
+        }
+
+        let mut log_bc_k_logbeta_k_bc = Vec::with_capacity(alpha_c as usize);
+        for k in 0..alpha_c {
+            log_bc_k_logbeta_k_bc
+                .push(((beta_c + k) as f64).ln() + logbeta((1 + k) as f64, beta_c as f64));
+        }
+
+        let abcd = (beta_a + beta_b + beta_c + beta_d) as f64;
+        let mut logbeta_bd_i_j_k = Vec::with_capacity((alpha_a + alpha_b + alpha_c) as usize);
+
+        for i in 0..alpha_a + alpha_b + alpha_c {
+            logbeta_bd_i_j_k.push(logbeta((alpha_d + i) as f64, abcd));
+        }
+
+        for i in 0..alpha_a {
+            let sum_i = -((beta_a + i) as f64).ln()
+                - logbeta((1 + i) as f64, beta_a as f64)
+                - logbeta_ad_bd;
+
+            for j in 0..alpha_b {
+                let sum_j = sum_i - log_bb_j_logbeta_j_bb[j as usize];
+
+                for k in 0..alpha_c {
+                    total += (sum_j + logbeta_bd_i_j_k[(i + j + k) as usize]
+                        - log_bc_k_logbeta_k_bc[k as usize])
+                        .exp();
+                }
+            }
+        }
+
+        1.0 - Self::prob_b_beats_a(alpha_a, beta_a, alpha_d, beta_d)
+            - Self::prob_b_beats_a(alpha_b, beta_b, alpha_d, beta_d)
+            - Self::prob_b_beats_a(alpha_c, beta_c, alpha_d, beta_d)
+            + Self::prob_c_beats_ab(alpha_a, beta_a, alpha_b, beta_b, alpha_d, beta_d)
+            + Self::prob_c_beats_ab(alpha_a, beta_a, alpha_c, beta_c, alpha_d, beta_d)
+            + Self::prob_c_beats_ab(alpha_b, beta_b, alpha_c, beta_c, alpha_d, beta_d)
+            - total
+    }
 }
 
 impl Default for BinaryTest {
@@ -112,126 +230,8 @@ impl Default for BinaryTest {
     }
 }
 
-fn prob_b_beats_a(alpha_a: u32, beta_a: u32, alpha_b: u32, beta_b: u32) -> f64 {
-    let mut total = 0.0;
-    let logbeta_aa_ba = logbeta(alpha_a as f64, beta_a as f64);
-    let beta_ba = (beta_b + beta_a) as f64;
-
-    for i in 0..alpha_b {
-        total += (logbeta((alpha_a + i) as f64, beta_ba)
-            - ((beta_b + i) as f64).ln()
-            - logbeta((1 + i) as f64, beta_b as f64)
-            - logbeta_aa_ba)
-            .exp();
-    }
-
-    total
-}
-
-fn prob_c_beats_ab(
-    alpha_a: u32,
-    beta_a: u32,
-    alpha_b: u32,
-    beta_b: u32,
-    alpha_c: u32,
-    beta_c: u32,
-) -> f64 {
-    let mut total = 0.0;
-
-    let logbeta_ac_bc = logbeta(alpha_c as f64, beta_c as f64);
-
-    let mut log_bb_j_logbeta_j_bb = Vec::with_capacity(alpha_b as usize);
-
-    for j in 0..alpha_b {
-        log_bb_j_logbeta_j_bb
-            .push(((beta_b + j) as f64).ln() + logbeta((1 + j) as f64, beta_b as f64));
-    }
-
-    let abc = (beta_a + beta_b + beta_c) as f64;
-    let mut logbeta_ac_i_j = Vec::with_capacity((alpha_a + alpha_b) as usize);
-
-    for i in 0..alpha_a + alpha_b {
-        logbeta_ac_i_j.push(logbeta((alpha_c + i) as f64, abc));
-    }
-
-    for i in 0..alpha_a {
-        let sum_i =
-            -((beta_a + i) as f64).ln() - logbeta((1 + i) as f64, beta_a as f64) - logbeta_ac_bc;
-
-        for j in 0..alpha_b {
-            total += (sum_i + logbeta_ac_i_j[(i + j) as usize] - log_bb_j_logbeta_j_bb[j as usize])
-                .exp();
-        }
-    }
-
-    1.0 - prob_b_beats_a(alpha_c, beta_c, alpha_a, beta_a)
-        - prob_b_beats_a(alpha_c, beta_c, alpha_b, beta_b)
-        + total
-}
-
-#[allow(clippy::too_many_arguments)]
-fn prob_d_beats_abc(
-    alpha_a: u32,
-    beta_a: u32,
-    alpha_b: u32,
-    beta_b: u32,
-    alpha_c: u32,
-    beta_c: u32,
-    alpha_d: u32,
-    beta_d: u32,
-) -> f64 {
-    let mut total = 0.0;
-
-    let logbeta_ad_bd = logbeta(alpha_d as f64, beta_d as f64);
-
-    let mut log_bb_j_logbeta_j_bb = Vec::with_capacity(alpha_b as usize);
-    for j in 0..alpha_b {
-        log_bb_j_logbeta_j_bb
-            .push(((beta_b + j) as f64).ln() + logbeta((1 + j) as f64, beta_b as f64));
-    }
-
-    let mut log_bc_k_logbeta_k_bc = Vec::with_capacity(alpha_c as usize);
-    for k in 0..alpha_c {
-        log_bc_k_logbeta_k_bc
-            .push(((beta_c + k) as f64).ln() + logbeta((1 + k) as f64, beta_c as f64));
-    }
-
-    let abcd = (beta_a + beta_b + beta_c + beta_d) as f64;
-    let mut logbeta_bd_i_j_k = Vec::with_capacity((alpha_a + alpha_b + alpha_c) as usize);
-
-    for i in 0..alpha_a + alpha_b + alpha_c {
-        logbeta_bd_i_j_k.push(logbeta((alpha_d + i) as f64, abcd));
-    }
-
-    for i in 0..alpha_a {
-        let sum_i =
-            -((beta_a + i) as f64).ln() - logbeta((1 + i) as f64, beta_a as f64) - logbeta_ad_bd;
-
-        for j in 0..alpha_b {
-            let sum_j = sum_i - log_bb_j_logbeta_j_bb[j as usize];
-
-            for k in 0..alpha_c {
-                total += (sum_j + logbeta_bd_i_j_k[(i + j + k) as usize]
-                    - log_bc_k_logbeta_k_bc[k as usize])
-                    .exp();
-            }
-        }
-    }
-
-    1.0 - prob_b_beats_a(alpha_a, beta_a, alpha_d, beta_d)
-        - prob_b_beats_a(alpha_b, beta_b, alpha_d, beta_d)
-        - prob_b_beats_a(alpha_c, beta_c, alpha_d, beta_d)
-        + prob_c_beats_ab(alpha_a, beta_a, alpha_b, beta_b, alpha_d, beta_d)
-        + prob_c_beats_ab(alpha_a, beta_a, alpha_c, beta_c, alpha_d, beta_d)
-        + prob_c_beats_ab(alpha_b, beta_b, alpha_c, beta_c, alpha_d, beta_d)
-        - total
-}
-
 #[cfg(test)]
 mod tests {
-    use super::prob_b_beats_a;
-    use super::prob_c_beats_ab;
-    use super::prob_d_beats_abc;
     use crate::{BinaryTest, Error};
 
     fn assert_approx(act: f64, exp: f64) {
@@ -314,24 +314,45 @@ mod tests {
 
     #[test]
     fn test_prob_b_beats_a() {
-        assert_approx(prob_b_beats_a(1, 2, 3, 4), 0.6428571428571429);
-        assert_approx(prob_b_beats_a(55, 50, 30, 30), 0.38386463776317903);
-        assert_approx(prob_b_beats_a(50, 50, 35, 30), 0.6867997222295887);
+        assert_approx(BinaryTest::prob_b_beats_a(1, 2, 3, 4), 0.6428571428571429);
+        assert_approx(
+            BinaryTest::prob_b_beats_a(55, 50, 30, 30),
+            0.38386463776317903,
+        );
+        assert_approx(
+            BinaryTest::prob_b_beats_a(50, 50, 35, 30),
+            0.6867997222295887,
+        );
     }
 
     #[test]
     fn test_prob_c_beats_ab() {
-        assert_approx(prob_c_beats_ab(1, 2, 3, 4, 5, 6), 0.4128959276018096);
-        assert_approx(prob_c_beats_ab(1, 2, 3, 4, 5, 100), 0.0004147782900546515);
-        assert_approx(prob_c_beats_ab(55, 50, 30, 30, 10, 10), 0.35421204276865736);
-        assert_approx(prob_c_beats_ab(50, 50, 35, 30, 13, 18), 0.09139305107602524);
+        assert_approx(
+            BinaryTest::prob_c_beats_ab(1, 2, 3, 4, 5, 6),
+            0.4128959276018096,
+        );
+        assert_approx(
+            BinaryTest::prob_c_beats_ab(1, 2, 3, 4, 5, 100),
+            0.0004147782900546515,
+        );
+        assert_approx(
+            BinaryTest::prob_c_beats_ab(55, 50, 30, 30, 10, 10),
+            0.35421204276865736,
+        );
+        assert_approx(
+            BinaryTest::prob_c_beats_ab(50, 50, 35, 30, 13, 18),
+            0.09139305107602524,
+        );
     }
 
     #[test]
     fn test_prob_d_beats_abc() {
-        assert_approx(prob_d_beats_abc(1, 2, 3, 4, 5, 6, 7, 8), 0.2853316096371013);
         assert_approx(
-            prob_d_beats_abc(55, 50, 30, 30, 10, 10, 25, 30),
+            BinaryTest::prob_d_beats_abc(1, 2, 3, 4, 5, 6, 7, 8),
+            0.2853316096371013,
+        );
+        assert_approx(
+            BinaryTest::prob_d_beats_abc(55, 50, 30, 30, 10, 10, 25, 30),
             0.08421499131901738,
         );
     }
