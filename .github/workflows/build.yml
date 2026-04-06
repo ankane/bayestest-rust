@@ -10,3 +10,6 @@ jobs:
       - run: cargo build --features no_std
       - run: cargo test --features no_std
       - run: cargo +nightly test --features nightly
+      # build for no_std to catch errors
+      - run: cargo +nightly build --features nightly,no_std
+      - run: cargo +nightly test --features nightly,no_std
