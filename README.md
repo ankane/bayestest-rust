@@ -13,7 +13,7 @@ Also available in [C](https://github.com/ankane/bayestest-c) and [C++](https://g
 Add this line to your application’s `Cargo.toml` under `[dependencies]`:
 
 ```toml
-bayestest = "0.2"
+bayestest = "0.3"
 ```
 
 ## Getting Started
