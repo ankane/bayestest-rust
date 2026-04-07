@@ -1,4 +1,4 @@
-## 0.3.0 (unreleased)
+## 0.3.0 (2026-04-07)
 
 - Added `Error` enum
 - Added experimental support for `no_std`

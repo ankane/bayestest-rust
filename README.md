@@ -27,8 +27,8 @@ bayestest = "0.2"
 use bayestest::BinaryTest;
 
 let mut test = BinaryTest::new();
-test.add(participants_a, conversions_a);
-test.add(participants_b, conversions_b);
+test.add(participants_a, conversions_a)?;
+test.add(participants_b, conversions_b)?;
 let probabilities = test.probabilities();
 ```
 
@@ -40,8 +40,8 @@ Supports up to 4 variants
 use bayestest::CountTest;
 
 let mut test = CountTest::new();
-test.add(events_a, exposure_a);
-test.add(events_b, exposure_b);
+test.add(events_a, exposure_a)?;
+test.add(events_b, exposure_b)?;
 let probabilities = test.probabilities();
 ```
 

@@ -1,6 +1,6 @@
 [package]
 name = "bayestest"
-version = "0.2.0"
+version = "0.3.0"
 description = "Bayesian A/B testing calculations for Rust"
 repository = "https://github.com/ankane/bayestest-rust"
 license = "MIT"
